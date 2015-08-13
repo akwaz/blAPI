@@ -2,7 +2,7 @@
 
 	class blAPI {
 		
-		protected  $settings_map = array();
+		protected  $settings_map = array();//dont know why does it exist, but it exists (at least for now...)
 		
 		//stores data about maps (levels) in bf4 - every map is called in a different way than in-game
 		//example - real name: Golmud Railway, battlelog name: MP_Journey
@@ -16,6 +16,9 @@
 				
 		//DLCs map
 		protected  $dlc_map;
+		
+		//kit map
+		protected $kit_map;
 				
 		//region map
 		protected  $region_map;		
@@ -35,36 +38,39 @@
 		 * Purpose: Get data about particular server. 
 		 * Args: 
 		 * 		*$server_url* - URL of the server (*OBLIGATORY)
+		 * 
 		 *		$json - false by default, if you want recieve a JSON object, set this to TRUE (optional)
+		 *
 		 * 		$human_friendly - false by default. If true, output data will be converted into ready-to-use vals
 		 * 						  like real name of map, correct preset name (optional)
+		 * 
 		 * Returns: array or JSON object
 		 * Throws: nothing
 		 */
 		public function getServerData($server_url, $json = false, $human_friendly = false) {
 			$url = $server_url . '?json=1';
-			$result = $this->query($url);
+			$server_data = $this->query($url);
 	
 			if ($human_friendly) {
 				
 				//pass $result to special method
-				$result = $this->humanFriendlyServer($result);	
+				$server_data = $this->humanFriendlyServer($server_data);	
 				
 				//return json object or php array
 				// if json = true, we have to encode it again, cause we've already change JSON to php array in humanFriendlyServer
 				if ($json) {
-					return json_encode($result);
+					return json_encode($server_data);
 				}
 				else {
-					return $result;
+					return $server_data;
 				}
 			}
 			//if user doesn't want human-friendly response...
 			else {
 				//if json = true, return $result without decoding
-				if ($json) {return $result;}
+				if ($json) {return $server_data;}
 				//otherwise decode JSON objcet to assoc array
-				else {return json_decode($result, true);}
+				else {return json_decode($server_data, true);}
 			}
 		}
 		
@@ -86,17 +92,63 @@
 		 * 
 		 * Purpose: Get data about one player
 		 * Args:
-		 * 		*$player_id* - player id, number can by found between "stats" and platform strings, e.g 
-		 * 					   soldier/ArekTheMLGPro/stats/ ->this-> 887022216/pc/ (*OBLIGATORY)
+		 * 		|*$player_id* - player id, number can by found between "stats" and 
+		 * 		|			   platform strings, e.g
+		 * 		|			   soldier/ArekTheMLGPro/stats/887022216/pc/ (*OBLIGATORY)
+		 *  	|
+		 * 		|$json - false by default. If true, method will return JSON object (optional)
+		 * 		|
+		 * 		|$big - false by default, can be etiher true or false, 
+		 *  	|		 if true method returns huge (about 2680 lines) array/JSON object. If false,
+		 * 		|		 will return about 298 lines. (optional)
+		 * 		|
+		 * 		|$human_friendly - false by default. If true, output data will be converted into 
+		 * 		|				   ready-to-use vals like correct preset name (optional)
+		 * 
 		 * Returns: array or JSON object
 		 * Throws: nothing
 		 */
-		public function getPlayerData ($player_id) {
+		public function getPlayerData ($player_id, $json = false, $human_friendly = false, $big = false) {
 			//big big data
 			/*http://battlelog.battlefield.com/bf4/warsawoverviewpopulate/ID/1/
 			
 			//small data
-			/*http://battlelog.battlefield.com/bf4/warsawdetailedstatspopulate/ID/1/*/
+			/*http://battlelog.battlefield.com/bf4/warsawdetailedstatspopulate/ID/1/
+			 * */
+			
+			if ($big) {
+				$url = $this->config_map['big_user_url_start'] . $player_id . $this->config_map['user_url_end'];
+			}
+			else {
+				$url = $this->config_map['small_user_url_start'] . $player_id . $this->config_map['user_url_end'];
+			}
+			$player_data = $this->query($url);
+			
+			
+			//spaghetti incoming...
+			if ($human_friendly) { //if user wants user-friendly output, we will send this var to special method
+				$player_data = $this->humanFriendlyPlayer($player_data, $big);
+				
+				//as below, we have to check if user wants JSON, or array. Keep in mind that by using humanFriendlyPlayer method,
+				//we've decoded our JSON. It's assoc array right now. That's why behaviour is reversed
+				if ($json) {
+					return json_encode($player_data);
+				}
+				else {
+					return $player_data;
+				}
+			}
+			else { //if he doesn't want this, we can return the data...
+				if ($json) { //... but we also have to check if user wants JSON or assoc array
+					//if json, simply return stuff - we haven't decoded it
+					return $player_data;
+				}
+				else {
+					//if assoc array, we have to decode it
+					return json_decode($player_data, true);
+				}
+			}
+			//whoa, that was a lot of spaghetti!
 		}
 		
 		/* END OF PUBLIC API CALLS */
@@ -117,6 +169,7 @@
 			if ($game == 'bf4') {
 				
 				//load game-specify assets 
+				$this->kit_map = require_once 'cfg/bf4/bf4_kit_map.php';
 				$this->map_map = require_once "cfg/bf4/bf4_map_map.php";
 				$this->dlc_map = require_once 'cfg/bf4/bf4_dlc_map.php';
 				$this->mode_map = require_once "classes/cfg/bf4/bf4_mode_map.php";
@@ -178,4 +231,62 @@
 			
 			return $result;
 		}
+		
+		protected function humanFriendlyPlayer ($player_data, $big) {
+			switch ($big) {
+				
+				//I've put partiular cases in special methods to keep it clear
+				case true:
+					return $player_data; //I won't support this huge shit with fucking 2000 lines
+					break;
+				case false:
+					return $player_data = $this->humanFriendlySmallPlayer($player_data);
+					break;
+			}
+		}
+		
+		//formats data for small chunk of player array
+		protected function humanFriendlySmallPlayer($player_data) {
+			//we have to decode our json			
+			print_r($player_data);
+			$player_data = json_decode($player_data, true);
+			//format stuff...
+			echo "<br></br>";
+			//set correct kits names in kitTimesInPercentage
+			$player_data['data']['generalStats']['kitTimesInPercentage'] = $this->changeKeys($player_data['data']['generalStats']['kitTimesInPercentage'], $this->kit_map);
+			
+			//the same fo kitTimes
+			$player_data['data']['generalStats']['kitTimes'] = $this->changeKeys($player_data['data']['generalStats']['kitTimes'], $this->kit_map);
+
+			//and again for kitScores
+			$player_data['data']['generalStats']['kitScores'] = $this->changeKeys($player_data['data']['generalStats']['kitScores'], $this->kit_map);
+			
+			//and again for serviceStarProgess
+			$player_data['data']['generalStats']['serviceStarsProgress'] = $this->changeKeys($player_data['data']['generalStats']['serviceStarsProgress'], $this->kit_map);
+			
+			//again, but now for gamemods - gameModesScore	
+			$player_data['data']['generalStats']['serviceStars'] = $this->changeKeys($player_data['data']['generalStats']['serviceStars'], $this->mode_map);
+			
+			$player_data['data']['generalStats']['gameModesScore'] = $this->changeKeys($player_data['data']['generalStats']['gameModesScore'], $this->mode_map);
+						
+			return $player_data;
+		}
+		
+		//access by passing full array and full map names:
+		//$this->changeKeys($player_data["data"]["generalStats"]["kitTimes"], $this->kit_map);
+		protected function changeKeys($path, $map) {
+			echo $size = count($path);
+			$keys = array_keys($path);
+			print_r($keys);
+			//var_dump($keys);
+			for ($i=0; $i<$size;  $i++) {
+				 $old_key = $keys[$i];
+				$new_key= $map[$old_key];
+				 $keys[$i] = $new_key;
+			}
+			return array_combine($keys, $path);
+		}
+						
+		
 	}
+	

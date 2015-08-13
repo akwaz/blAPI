@@ -14,6 +14,15 @@
 				"2" => "Rush",
 				"8" => "Squad Deathmatch",
 				"137438953472" => "Squad Obliteration",
-				"32" => "Team Deathmatch"			
+				"32" => "Team Deathmatch",
+				// for players
+				"33554432" => "Carrier Assault",
+				"68719476736"  => "Conquest",
+				"2097152" => "Obliteration",
+				"524288" => "Capture the Flag",
+			
+				//for serviceStars
+				"2048" => "Commander"
+				
 		);
 	
