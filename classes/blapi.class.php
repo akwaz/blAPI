@@ -27,11 +27,15 @@
 		protected  $config_map;
 				
 		public function __construct($game) {
-			$this->loadCfg($game);
-		}	
+			if ($game != 'unknown'){ $this->loadCfg($game);}	
+		}
 		
 		/* START OF PUBLIC API CALLS */
 		
+		//allows user to set the game after constructing the object
+		public function setGame($game) {
+			$this->loadCfg($game);
+		}
 		
 		/* public function getServerData($server_url, $json = false, $human_friendly = false)
 		 * 
@@ -175,7 +179,14 @@
 				$this->mode_map = require_once "classes/cfg/bf4/bf4_mode_map.php";
 				$this->config_map = require_once 'classes/cfg/bf4/bf4_config_map.php';
 			}
-			//elseif ($smth) {}
+			elseif ($game == 'bfh') {
+				$this->kit_map = require_once 'cfg/bfh/bfh_kit_map.php';
+				$this->map_map = require_once "cfg/bfh/bfh_map_map.php";
+				$this->dlc_map = require_once 'cfg/bfh/bfh_dlc_map.php';
+				$this->mode_map = require_once "classes/cfg/bfh/bfh_mode_map.php";
+				$this->config_map = require_once 'classes/cfg/bfh/bfh_config_map.php';
+				
+			}
 		}
 		
 		protected function humanFriendlyServer ($result) {
@@ -191,6 +202,9 @@
 			$result['message']['SERVER_INFO']['mapMode'] = $this->mode_map[$mode];
 			
 			//set correct names of maps IN ROTATION
+			//side note: I could actually do a method (like in humanFriendlySmallPlayer), so I wouldn't have to copy this foreach 1 million times
+			//but dang it.
+			//Je n'ai pas d'envie.
 			$i = 0;
 			foreach ($result['message']['SERVER_INFO']['maps']['maps'] as &$row) {
 				$name =  $row['map'];
@@ -198,7 +212,7 @@
 				$row['map'] = $this->map_map[$name];
 				$i++;
 			}
-			unset($row); //unset to break the reference cause by &
+			unset($row); //unset to break the reference caused by &
 			
 			//set next map
 			$nextIndex = $result['message']['SERVER_INFO']['maps']['nextMapIndex'];
@@ -251,7 +265,6 @@
 			print_r($player_data);
 			$player_data = json_decode($player_data, true);
 			//format stuff...
-			echo "<br></br>";
 			//set correct kits names in kitTimesInPercentage
 			$player_data['data']['generalStats']['kitTimesInPercentage'] = $this->changeKeys($player_data['data']['generalStats']['kitTimesInPercentage'], $this->kit_map);
 			
