@@ -1,8 +1,8 @@
-# blAPI
-Battlelog API - simple, one-class API to get data from Battlelog. 
+#blAPI
+###Battlelog API - simple, one-class API ready to help you get data from Battlelog. 
 
-It not only downloads data, but also returns it in ready to use way - class can replace all of these pesky numbers with real values. For example, Battlelog returns name *MP_Tremors*. That won't tell you much, will it? Just pass **true** at the end of arguments, and blAPI will change this garbage into *Dawnbreaker*. It's nifty, isn't it? :)
+It not only gets the data directly from Battlelog, but blAPI can also change Battlelog raw data to ready to use values!
+![Extra stuff!](http://i.imgur.com/e62Ho8P.jpg)
 
-Futher information to come.
-
+###How to use this?
 
