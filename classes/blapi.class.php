@@ -62,19 +62,23 @@
 				
 				//return json object or php array
 				// if json = true, we have to encode it again, cause we've already change JSON to php array in humanFriendlyServer
-				if ($json) {
+				/*if ($json) {
 					return json_encode($server_data);
 				}
 				else {
 					return $server_data;
-				}
+				}*/
+				$server_data = $this->returnData($server_data, $json, false);
+				return $server_data;
 			}
 			//if user doesn't want human-friendly response...
 			else {
-				//if json = true, return $result without decoding
+				/*//if json = true, return $result without decoding
 				if ($json) {return $server_data;}
 				//otherwise decode JSON objcet to assoc array
-				else {return json_decode($server_data, true);}
+				else {return json_decode($server_data, true);}*/
+				$server_data = $this->returnData($server_data, $json, true);
+				return $server_data;
 			}
 		}
 		
@@ -87,8 +91,17 @@
 		 * Returns:
 		 * Throws:
 		 */
-		public function getBattleReport($battle_report) {
-			
+		public function getBattleReport($report_id, $json = false, $human_friendly = false) {
+			$url = $this->config_map['report_url_start'] . $report_id . $this->config_map['report_url_end'];
+			$report = $this->query($url);		
+			if ($human_friendly) {
+				$report = $this->humanFriendlyReport($report);
+				$report = $this->returnData($report, $json, false);
+				return $report;
+			}else {
+				$report = $this->returnData($report, $json, true);
+				return $report;
+			}
 		}
 		
 		
@@ -96,18 +109,18 @@
 		 * 
 		 * Purpose: Get data about one player
 		 * Args:
-		 * 		|*$player_id* - player id, number can by found between "stats" and 
-		 * 		|			   platform strings, e.g
-		 * 		|			   soldier/ArekTheMLGPro/stats/887022216/pc/ (*OBLIGATORY)
-		 *  	|
-		 * 		|$json - false by default. If true, method will return JSON object (optional)
-		 * 		|
-		 * 		|$big - false by default, can be etiher true or false, 
-		 *  	|		 if true method returns huge (about 2680 lines) array/JSON object. If false,
-		 * 		|		 will return about 298 lines. (optional)
-		 * 		|
-		 * 		|$human_friendly - false by default. If true, output data will be converted into 
-		 * 		|				   ready-to-use vals like correct preset name (optional)
+		 * 		*$player_id* - player id, number can by found between "stats" and 
+		 * 					   platform strings, e.g
+		 * 					   soldier/ArekTheMLGPro/stats/887022216/pc/ (*OBLIGATORY)
+		 *  	
+		 * 		$json - false by default. If true, method will return JSON object (optional)
+		 * 		
+		 * 		$big - false by default, can be etiher true or false, 
+		 *  		   if true method returns huge (about 2680 lines) array/JSON object. If false,
+		 * 			   will return about 298 lines. (optional)
+		 * 		
+		 * 		$human_friendly - false by default. If true, output data will be converted into 
+		 * 					   ready-to-use vals like correct preset name (optional)
 		 * 
 		 * Returns: array or JSON object
 		 * Throws: nothing
@@ -135,22 +148,26 @@
 				
 				//as below, we have to check if user wants JSON, or array. Keep in mind that by using humanFriendlyPlayer method,
 				//we've decoded our JSON. It's assoc array right now. That's why behaviour is reversed
-				if ($json) {
+				/*if ($json) {
 					return json_encode($player_data);
 				}
 				else {
 					return $player_data;
-				}
+				}*/
+				$player_data = $this->returnData($player_data, $json, false);
+				return $player_data;
 			}
 			else { //if he doesn't want this, we can return the data...
-				if ($json) { //... but we also have to check if user wants JSON or assoc array
+				/*if ($json) { //... but we also have to check if user wants JSON or assoc array
 					//if json, simply return stuff - we haven't decoded it
 					return $player_data;
 				}
 				else {
 					//if assoc array, we have to decode it
 					return json_decode($player_data, true);
-				}
+				}*/
+				$player_data = $this->returnData($player_data, $json, true);
+				return $player_data;
 			}
 			//whoa, that was a lot of spaghetti!
 		}
@@ -193,12 +210,15 @@
 			//we have to decode json here anyway, cause we want to change some values to more user-friendly
 			$result = json_decode($result, true);
 		
+			//would you like some spaghetti?
 			//set correct name of CURRENT MAP
 			$map = $result['message']['SERVER_INFO']['map'];
+			$this->map_map[$map] = $this->checkOffset($map, $this->map_map);
 			$result['message']['SERVER_INFO']['map'] = $this->map_map[$map];
 		
 			//set name of current mode
 			$mode = $result['message']['SERVER_INFO']['mapMode'];
+			$this->mode_map[$mode] = $this->checkOffset($mode, $this->mode_map);
 			$result['message']['SERVER_INFO']['mapMode'] = $this->mode_map[$mode];
 			
 			//set correct names of maps IN ROTATION
@@ -208,28 +228,34 @@
 			$i = 0;
 			foreach ($result['message']['SERVER_INFO']['maps']['maps'] as &$row) {
 				$name =  $row['map'];
+				$this->map_map[$name] = $this->checkOffset($name, $this->map_map);
+				
 				$maps[$i] = $this->map_map[$name]; //to set next map later
 				$row['map'] = $this->map_map[$name];
-				$i++;
+				$i++; //it's important var, don't delete this!
 			}
 			unset($row); //unset to break the reference caused by &
 			
 			//set next map
 			$nextIndex = $result['message']['SERVER_INFO']['maps']['nextMapIndex'];
+			$this->map_map[$nextIndex] = $this->checkOffset($nextIndex, $this->map_map);
 			$result['message']['SERVER_INFO']['maps']['nextMapIndex'] = $maps[$nextIndex];
 			//set correct names of modes in rotation
 			foreach ($result['message']['SERVER_INFO']['maps']['maps'] as &$row) {
 				$mode =  $row['mapMode'];
+				$this->mode_map[$mode] = $this->checkOffset($mode, $this->mode_map);
 				$row['mapMode'] = $this->mode_map[$mode];
 			}
 			unset($row);
 			
 			//set correct name of current expansion
 			$dlc = $result['message']['SERVER_INFO']['gameExpansion'];
+			$this->dlc_map[$dlc] = $this->checkOffset($dlc, $this->dlc_map);
 			$result['message']['SERVER_INFO']['gameExpansion'] = $this->dlc_map[$dlc];
 			
 			//set correct name of PRESET
 			$preset = $result['message']['SERVER_INFO']['preset'];
+			$this->preset_map[$preset] = $this->checkOffset($preset, $this->preset_map);
 			$result['message']['SERVER_INFO']['preset'] = $this->preset_map[$preset];
 			
 			//set names of expansions
@@ -241,6 +267,7 @@
 				
 			//set name of region
 			$region = $result['message']['SERVER_INFO']['region'];
+			$this->region_map[$region] = $this->checkOffset($region, $this->region_map);
 			$result['message']['SERVER_INFO']['region'] = $this->region_map[$region];
 			
 			return $result;
@@ -251,6 +278,7 @@
 				
 				//I've put partiular cases in special methods to keep it clear
 				case true:
+					$player_data = json_decode($player_data, true);
 					return $player_data; //I won't support this huge shit with fucking 2000 lines
 					break;
 				case false:
@@ -262,7 +290,6 @@
 		//formats data for small chunk of player array
 		protected function humanFriendlySmallPlayer($player_data) {
 			//we have to decode our json			
-			print_r($player_data);
 			$player_data = json_decode($player_data, true);
 			//format stuff...
 			//set correct kits names in kitTimesInPercentage
@@ -285,21 +312,104 @@
 			return $player_data;
 		}
 		
+		protected function humanFriendlyReport($report) {
+			//do stuff
+			$report = json_decode($report, true);
+			
+			//create a players array, will use it later when changing ids to usernames
+			foreach ($report['players'] as $row) {
+				$id = $row['persona']['personaId'];
+				$username  =  $row['persona']['user']['username'];
+				$players[$id] = $username;
+			}
+			
+			//set correct preset name
+			$report['gameMode'] = $this->mode_map[$report['gameMode']];
+			
+			//set correct map name
+			$report['gameServer']['map'] = $this->map_map[$report['gameServer']['map']];
+			//Loops time!
+			
+			
+			//set correct usernames for players from both teams
+			for ($a = 1; $a <= 2; $a++) {
+				foreach ($report['teams'][$a]['players'] as &$row) {
+					$id = $row;
+					$row = $players[$id];
+				}
+				unset($row);
+			
+			}
+
+			//set correct names of commander for both teams
+			
+			//set correct names for squads for both teams
+			$size = count($report['teams']['1']['squads']);
+			
+			//will be done 2 times, as there can only be 2 teams
+			for ($a = 1; $a<=2; $a++) {
+				for ($i = 1; $i <= $size; $i++) {
+					$report['teams'][$a]['squads'][$i] = $this->setSquadNames($report['teams'][$a]['squads'][$i], $players);
+				}
+				$size = count($report['teams']['2']['squads']);
+				
+			}
+
+			//end of spaghetti!
+			return 	$report;
+		}
 		//access by passing full array and full map names:
-		//$this->changeKeys($player_data["data"]["generalStats"]["kitTimes"], $this->kit_map);
+		//example: $this->changeKeys($player_data["data"]["generalStats"]["kitTimes"], $this->kit_map);
 		protected function changeKeys($path, $map) {
-			echo $size = count($path);
+			$size = count($path);
 			$keys = array_keys($path);
-			print_r($keys);
-			//var_dump($keys);
 			for ($i=0; $i<$size;  $i++) {
 				 $old_key = $keys[$i];
-				$new_key= $map[$old_key];
+				 
+				 //some error handling
+				 if (isset($map[$old_key]) and !empty($map[$old_key])) {
+				 $new_key= $map[$old_key];
+				 } else {
+				 $new_key = 'blAPI: Unknown';
+				 }
+				 
 				 $keys[$i] = $new_key;
 			}
 			return array_combine($keys, $path);
 		}
 						
+		protected function returnData($data, $json, $is_now_json) {
+			if ($json and !$is_now_json) {
+				return json_encode($data);
+			}
+			elseif ($json and $is_now_json) {
+				return $data;
+			}
+			elseif (!$json and $is_now_json) {
+				return json_decode($data, true);
+			}
+			elseif (!$json and !$is_now_json) {
+				return $data;
+			}
+			
+		}
 		
-	}
+		protected function checkOffset($offset, $map) {
+			if (isset($map[$offset]) ) {
+				return $map[$offset];
+			}
+			else {
+				return "blAPI: Unknown";
+			}
+		}
+				
+		protected function setSquadNames($array, $players) {
+			foreach ($array as &$row) {
+				$id = $row;
+				$row = $players[$id];
+			}
+			unset($row);
+			return $array;
+		}
+			}
 	
