@@ -11,12 +11,15 @@ There are 4 public methods at the momement (and these are the only you should wo
 ######constructor
 Constructor requires only one argument - $game. It must be a shorthand of one of supported games or "unknown" if you don't want to load  all of config files now. 
 Supported games are: 
- *Battlefield 4 - "bf4"
- *Battlefield Hardline - "bfh"
+
+ * Battlefield 4 - "bf4"
+ * Battlefield Hardline - "bfh"
  
- If it is possible, I will add Battlefront support when it comes out! I will also think about CTE.
+If it is possible, I will add Battlefront support when it comes out! I will also think about CTE.
  
- Other arguments are: $blapi_light = false, $logs = false. Set first one to true if you don't want to use the feature shown on picture on the top of the page. blAPI will load then only crucial (game)_config_map file. Set second one to true if you want to enable logging events to text file (under construction).
+ Other arguments are: $blapi_light = false, $logs = false. Set first one to true if you don't want to use the feature shown on picture on the top of the page. blAPI will load then only crucial (game)_config_map file. Set second one to true if you want to enable logging events to text file.
+
+Events are logged to a text file blapi_log.txt. 
  
  Basic initialization:
  ```php
@@ -29,13 +32,13 @@ Supported games are:
  $blapi = new blAPI("bf4", false, true);
  ```
  
- **Summary of constructor**
+ **Summary of __construct($game, $blapi_light = false, $logs = false)**
  
  Argument     | Data
 ------------- | -------------
-$game  | String, supported values: bf4, bfh
+$game*  | String, supported values: bf4, bfh
 $blapi_light | False by default, if true, blAPI will use only one, crucial config file
-$logs | False by default, if true, blAPI will log stuff to text file
+$logs | False by default, if true, blAPI will log stuff to a text file
 
 ######setGame($game)
 This method allows you to set or change the game you want to recieve the data from. This can be set when constructing a new object too. So you can use one of two ways to set the game: 
@@ -57,7 +60,8 @@ You can also change the game to other.
 
 Argument     | Data
 ------------- | -------------
-$game  | String, supported values: bf4, bfh
+$game*  | String, supported values: bf4, bfh
+$blapi_light | False by default, if true, blAPI will use only one, crucial config file
 
 ######getServerData($server_url, $json = false, $human_friendly = false)
 
@@ -82,7 +86,7 @@ Second - you're passing $server_url and additional arguments. These two argument
 
 Argument     | Data
 ------------- | -------------
-$server_url | Contains string with full server URL
+$server_url* | Contains string with full server URL
 $json | *False by default.* Can be *true* or *false*. If true, method will return JSON object. If false - associative array
 $human_friendly | *False by default.* Can be *true* or *false*. If true, method will return JSON/array with correct names of maps, correct preset names - like on the right side of picture. E.g. instead of XP_002 there will be "Nansha Strike".
 
@@ -101,7 +105,7 @@ $data = $blapi->getPlayerData($id);
 ```
 Method will return associative array with data about player. 
 
-If you want JSON, to make it $human_friendly or get bigger chunk of data (that's other "Battlelog API" url, will return HUGE array, around 2000 lines, it has data about emblem), then you have to set correct variables to true.
+If you want JSON, to make it $human_friendly or get bigger chunk of data (that's other "Battlelog API" url, will return huge array, around 2000 lines, it has also data about emblem), then you have to set correct variables to true.
 
 One word about this way to get a bigger chunk of data. It is returned by http://battlelog.battlefield.com/bf4/warsawoverviewpopulate/{ID}/1/ URL, check it by yourself. This callback has a lot more information, but mainly about internal paths to images, data about emblem. Smaller and faster one, http://battlelog.battlefield.com/bf4/warsawdetailedstatspopulate/{ID}/1/ has enough info about player and it will be enough in 99% of cases. Keep in mind that $human_friendly variable **doesn't work with this huge callback**. It's possible to use this only with smaller array.
 
@@ -109,17 +113,77 @@ Let's say that I want to get a JSON object, with "human" values (e.g. instead of
 
 ```php 
 $id = 887022216; //can be also '887022216' - that doesn't matter
-$blapi->getPlayerData($id, true, true);
+$data = $blapi->getPlayerData($id, true, true);
 ```
 **Summary of getPlayerData ($player_id, $json = false, $human_friendly = false, $big = false)**
 
 Argument     | Data
 ------------- | -------------
-$player_id | ID of soldier/agent (check above to see which ID and how to get this ID)
+$player_id* | ID of soldier/agent (check above to see which ID and how to get this ID)
 $json | *False by default.* Can be *true* or *false*. If true, method will return JSON object. If false - associative array
 $human_friendly | *False by default.* Can be *true* or *false*. If true, method will return JSON/array with correct names of maps, correct preset names - like on the right side of picture. E.g. instead of 34359738368 there will be "Chain Link". **WORKS ONLY WITH $big = false - even if true is passed, method will return raw data, like on the left side of the picture at the beginning**
 $big | *False by default.* If true, method will use other URL and return way more data. Look above for more information. **IF TRUE, WILL NOT WORK WITH $human_friendly**
 
-######getBattleReport()
-*Work in progress...*
+######getBattleReport($report_id, $json = false, $human_friendly = false)
 
+Returns array or JSON object (based on $json variable) with data about one battlereport. There are 3 arguments, only first is obligatory. You probably know two others, as you probably read whole of this readme. In fact, these two will cause the same things as in getPlayerData() and getServerData().
+
+$report_id must contain an ID of the report. This id is hidden in battlereport URL. Here is an example URL:
+```
+http://battlelog.battlefield.com/bf4/battlereport/show/1/561823230545492992/887022216/
+561823230545492992 - this is our battlereport ID. The second number (887022216) is ID of OUR SOLDIER.
+```
+We know the stuff, here's basic way of calling this method:
+```php
+$id = 561823230545492992; //can be also '561823230545492992'
+$data = $blapi->getBattleReport($id);
+```
+Calling this method with more arguments - with human-friendly output in JSON:
+```php 
+$id = 561823230545492992;
+$data = $blapi->getBattleReport($id, true, true);
+```
+**Summary of getBattleReport($report_id, $json = false, $human_friendly = false)**
+
+Argument     | Data
+------------- | -------------
+$report_id* | Must contain an ID of battlereport
+$json | *False by default.* Can be *true* or *false*. If true, method will return JSON object. If false - associative array
+$human_friendly | False by default.* Can be *true* or *false*. If true, method will return JSON/array with correct names of maps, correct preset names - like on the right side of picture. E.g. instead of XP_002 there will be "Nansha Strike".
+###I don't want to load all of those config files!
+
+That's OK. If you want to use the "light" version of blAPI, just pass true after chosen game.
+```php
+$blapi = new blAPI("bf4"l, true);
+```
+If you want to always use light version of blAPI, you can even delete unused files. **You have to leave all (game)_config_map.php files tho.** These are crucial and class can't work without them.
+
+Important thing: obviously you can change paths of files in $file_map field to fit your expectations. For example, put all of config_map.php files in one directory, for example delete all of unused maps and change $file_map array:
+```php
+//Captain Obvious: This in an example! You don't have to do this :)
+
+Before:
+	private $file_map =  array (
+				//universal
+				"preset_map" => "classes/cfg/preset_map.php",
+				"region_map" => "classes/cfg/region_map.php",
+				//bf4
+				"bf4_kit_map" => "classes/cfg/bf4/bf4_kit_map.php",
+				"bf4_map_map" => "classes/cfg/bf4/bf4_map_map.php",
+				"bf4_dlc_map" => "classes/cfg/bf4/bf4_dlc_map.php",
+				"bf4_mode_map" => "classes/cfg/bf4/bf4_mode_map.php",
+				"bf4_config_map" => "classes/cfg/bf4/bf4_config_map.php",
+				//bfh
+				"bfh_kit_map" => "classes/cfg/bfh/bfh_kit_map.php",
+				"bfh_map_map" => "classes/cfg/bfh/bfh_map_map.php",
+				"bfh_dlc_map" => "classes/cfg/bfh/bfh_dlc_map.php",
+				"bfh_mode_map" => "classes/cfg/bfh/bfh_mode_map.php",
+				"bfh_config_map" => "classes/cfg/bfh/bfh_config_map.php",
+		
+		);
+		
+		After:
+			private $file_map =  array (
+				"bf4_config_map" => "maps/bf4_config_map.php",
+				"bfh_config_map" => "maps/bfh_config_map.php"
+		);
