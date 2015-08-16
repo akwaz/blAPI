@@ -6,7 +6,35 @@ It not only gets the data directly from Battlelog, but blAPI can also change Bat
 
 ###How to use blAPI?
 
-There are 4 public methods at the momement (and these are the only you should worry about):
+There are 4 public methods at the momement (and these are the only you should worry about) and (obviously) constructor:
+
+######constructor
+Constructor requires only one argument - $game. It must be a shorthand of one of supported games or "unknown" if you don't want to load  all of config files now. 
+Supported games are: 
+ *Battlefield 4 - "bf4"
+ *Battlefield Hardline - "bfh"
+ 
+ If it is possible, I will add Battlefront support when it comes out! I will also think about CTE.
+ 
+ Other arguments are: $blapi_light = false, $logs = false. Set first one to true if you don't want to use the feature shown on picture on the top of the page. blAPI will load then only crucial (game)_config_map file. Set second one to true if you want to enable logging events to text file (under construction).
+ 
+ Basic initialization:
+ ```php
+ $blapi = new blAPI('bf4');
+ $blapi = new blAPI("unknown");
+ ```
+ More arguments:
+ ```php
+ $blapi = new blAPI("bfh", true, true);
+ $blapi = new blAPI("bf4", false, true);
+ ```
+ 
+ **Summary of constructor**
+ Argument     | Data
+------------- | -------------
+$game  | String, supported values: bf4, bfh
+$blapi_light | False by default, if true, blAPI will use only one, crucial config file
+$logs | False by default, if true, blAPI will log stuff to text file
 
 ######setGame($game)
 This method allows you to set or change the game you want to recieve the data from. This can be set when constructing a new object too. So you can use one of two ways to set the game: 
