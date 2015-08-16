@@ -30,6 +30,7 @@ Supported games are:
  ```
  
  **Summary of constructor**
+ 
  Argument     | Data
 ------------- | -------------
 $game  | String, supported values: bf4, bfh
