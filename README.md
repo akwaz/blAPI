@@ -158,7 +158,7 @@ $blapi = new blAPI("bf4"l, true);
 ```
 If you want to always use light version of blAPI, you can even delete unused files. **You have to leave all (game)_config_map.php files tho.** These are crucial and class can't work without them.
 
-Important thing: obviously you can change paths of files in $file_map field to fit your expectations. For example, put all of config_map.php files in one directory, for example delete all of unused maps and change $file_map array:
+Important thing: obviously you can change paths of files in $file_map field to fit your expectations. For example, put all of config_map.php files in one directory, let's called it maps, delete all of unused maps and change $file_map array:
 ```php
 //Captain Obvious: This in an example! You don't have to do this :)
 
