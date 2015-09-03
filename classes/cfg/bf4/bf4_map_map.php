@@ -40,6 +40,9 @@
 			"XP4_WlkrFtry" => "Giants of Karelia",
 			"XP4_SubBase" => "Hammerhead",
 			"XP4_Titan" => "Hangar 21",
-			"XP4_Arctic" => "Operation Whiteout"
+			"XP4_Arctic" => "Operation Whiteout",
+			
+			//Additional, free DLCs - night map, CMP, Dragon Valley and everything that goes after
+			"XP5_Night_01" => "Zavod: Graveyard Shift"
 		);
 	
