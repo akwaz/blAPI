@@ -48,7 +48,7 @@ This method allows you to set or change the game you want to recieve the data fr
 Now you don't have to run setGame() method, unless you want to change the game.
 Second way:
   ```php
-  $blapi = new blAPI();
+  $blapi = new blAPI('unknown');
   $blapi->setGame('bfh');
   ```
 You can also change the game to other.
