@@ -9,6 +9,7 @@
 			"1073741824" => "Conquest Large ",
 			"536870912" => "Conquest",
 			"274877906944" => "Bounty Hunter",
+			"549755813888" => "Squad Heist",
 			
 			//for player data
 			"8" => "Team Deathmatch",

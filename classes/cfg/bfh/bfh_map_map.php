@@ -16,8 +16,17 @@
 			"XP1_Sawmill" => "Backwoods",
 			"XP1_MallCops" => "Black Friday",
 			"XP1_Nights" => "Code Blue",
-			"XP1_Projects" => "The Beat"
+			"XP1_Projects" => "The Beat",
 			
 			//Robbery
+			"XP2_Coastal" => "Break Pointe",
+			"XP2_Museum02" => "Museum",
+			"XP2_Precinct7" => "Precinct 7",
+			"XP2_Cargoship" => "The Docks",
+			
+			
+			//Night free dlc
+			"XP25_Bank" => "Night Job",
+			"XP25_Sawmill" => "Night Woods"
 			//...to be updated
 	);

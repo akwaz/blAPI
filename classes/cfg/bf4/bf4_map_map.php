@@ -43,6 +43,8 @@
 			"XP4_Arctic" => "Operation Whiteout",
 			
 			//Additional, free DLCs - night map, CMP, Dragon Valley and everything that goes after
-			"XP5_Night_01" => "Zavod: Graveyard Shift"
+			"XP5_Night_01" => "Zavod: Graveyard Shift",
+			
+			"XP6_CMP" => "Operation Outbreak"
 		);
 	

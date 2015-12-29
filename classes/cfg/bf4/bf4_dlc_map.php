@@ -6,6 +6,7 @@
 				"4194304" => "Dragon's Teeth",
 				"8388608" => "Final Stand",
 				"268435456" => "Night Operations",
+				"8589934592" => "Community Operations",
 				"0" => "Vanilla"
 		);
 	
