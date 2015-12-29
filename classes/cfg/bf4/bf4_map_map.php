@@ -1,50 +1,52 @@
 <?php
 	return array(
 			//vanilla
-			"MP_Tremors" => "Dawnbreaker",
-			"MP_Flooded" => "Flood Zone",
-			"MP_Journey" => "Golmud Railway",
-			"MP_Resort" => "Hainan Resort",
-			"MP_Damage" => "Lancang Dam",
-			"MP_Prison" => "Operation Locker",
-			"MP_Naval" => "Paracel Storm",
-			"MP_TheDish" => "Rouge Transmisson",
-			"MP_Siege" => "Siege of Shanghai",
-			"MP_Abandoned" => "Zavod 311",
+			"mp_tremors" => "Dawnbreaker",
+			"mp_flooded" => "Flood Zone",
+			"mp_journey" => "Golmud Railway",
+			"mp_resort" => "Hainan Resort",
+			"mp_damage" => "Lancang Dam",
+			"mp_prison" => "Operation Locker",
+			"mp_naval" => "Paracel Storm",
+			"mp_thedish" => "Rouge Transmisson",
+			"mp_siege" => "Siege of Shanghai",
+			"mp_abandoned" => "Zavod 311",
 				
 			//China Rising
-			"XP1_001" => "Silk Road",
-			"XP1_002" => "Altai Range",
-			"XP1_003" => "Guilin Peaks",
-			"XP1_004" => "Dragon Pass",
+			"xp1_001" => "Silk Road",
+			"xp1_002" => "Altai Range",
+			"xp1_003" => "Guilin Peaks",
+			"xp1_004" => "Dragon Pass",
 				
 			//Second Assault
-			"XP0_Caspian" => "Caspain Border",
-			"XP0_Oman" => "Gulf of Oman",
-			"XP0_Firestorm" => "Operation Firestorm",
-			"XP0_Metro" => "Operation Metro",
+			"xp0_caspian" => "Caspain Border",
+			"xp0_oman" => "Gulf of Oman",
+			"xp0_firestorm" => "Operation Firestorm",
+			"xp0_metro" => "Operation Metro",
 				
 			//Naval Strike
-			"XP2_001" => "Lost Islands",
-			"XP2_002" => "Nansha Strike",
-			"XP2_003" => "Wave Breaker",
-			"XP2_004" => "Operation Mortar",
+			"xp2_001" => "Lost Islands",
+			"xp2_002" => "Nansha Strike",
+			"xp2_003" => "Wave Breaker",
+			"xp2_004" => "Operation Mortar",
 				
 			//Dragon's Teeth
-			"XP3_UrbanGdn" => "Lumphini Garden",
-			"XP3_MarketPl" => "Pearl Market",
-			"XP3_Prpganda" => "Propaganda",
-			"XP3_WtrFront" => "Sunken Dragon",
+			"xp3_urbangdn" => "Lumphini Garden",
+			"xp3_marketpl" => "Pearl Market",
+			"xp3_prpganda" => "Propaganda",
+			"xp3_wtrfront" => "Sunken Dragon",
 				
 			//Final Stand
-			"XP4_WlkrFtry" => "Giants of Karelia",
-			"XP4_SubBase" => "Hammerhead",
-			"XP4_Titan" => "Hangar 21",
-			"XP4_Arctic" => "Operation Whiteout",
+			"xp4_wlkrftry" => "Giants of Karelia",
+			"xp4_subbase" => "Hammerhead",
+			"xp4_titan" => "Hangar 21",
+			"xp4_arctic" => "Operation Whiteout",
 			
 			//Additional, free DLCs - night map, CMP, Dragon Valley and everything that goes after
-			"XP5_Night_01" => "Zavod: Graveyard Shift",
+			"xp5_night_01" => "Zavod: Graveyard Shift",
 			
-			"XP6_CMP" => "Operation Outbreak"
+			"xp6_cmp" => "Operation Outbreak",
+			
+			"xp7_valley" => "Dragon Valley 2015"
 		);
 	

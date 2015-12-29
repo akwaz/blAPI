@@ -1,32 +1,32 @@
 <?php
 	return array (
-			"MP_Bank" => "Bank Job",
-			"MP_Eastside" => "Derailed",
-			"MP_Downtown" => "Downtown",
-			"MP_Desert" => "Dust Bowl",
-			"MP_Glades" => "Everglades",
-			"MP_Growhouse" => "Growhouse",
-			"MP_Hills" => "Hollywood Heights",
-			"MP_OffShore" => "Riptide",
-			"MP_Bloodout" => "The Block",
+			"mp_bank" => "Bank Job",
+			"mp_eastside" => "Derailed",
+			"mp_downtown" => "Downtown",
+			"mp_desert" => "Dust Bowl",
+			"mp_glades" => "Everglades",
+			"mp_growhouse" => "Growhouse",
+			"mp_hills" => "Hollywood Heights",
+			"mp_offShore" => "Riptide",
+			"mp_bloodout" => "The Block",
 			
 			//it's somehow bugged...
-			"MP_Desert05" => "Dust Bowl",
+			"mp_desert05" => "Dust Bowl",
 			//Criminal Activity
-			"XP1_Sawmill" => "Backwoods",
-			"XP1_MallCops" => "Black Friday",
-			"XP1_Nights" => "Code Blue",
-			"XP1_Projects" => "The Beat",
+			"xp1_sawmill" => "Backwoods",
+			"xp1_mallcops" => "Black Friday",
+			"xp1_nights" => "Code Blue",
+			"xp1_projects" => "The Beat",
 			
 			//Robbery
-			"XP2_Coastal" => "Break Pointe",
-			"XP2_Museum02" => "Museum",
-			"XP2_Precinct7" => "Precinct 7",
-			"XP2_Cargoship" => "The Docks",
+			"xp2_coastal" => "Break Pointe",
+			"xp2_museum02" => "Museum",
+			"xp2_precinct7" => "Precinct 7",
+			"xp2_cargoship" => "The Docks",
 			
 			
 			//Night free dlc
-			"XP25_Bank" => "Night Job",
-			"XP25_Sawmill" => "Night Woods"
+			"xp25_bank" => "Night Job",
+			"xp25_sawmill" => "Night Woods"
 			//...to be updated
 	);

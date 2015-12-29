@@ -23,13 +23,13 @@
 		);
 		
 		//stores data about maps (levels)
-		private  $map_map;
+		private $map_map;
 		
 		//preset map
-		private  $preset_map;
+		private $preset_map;
 			
 		//gamemodes map
-		private  $mode_map;
+		private $mode_map;
 				
 		//DLCs map
 		private  $dlc_map;
@@ -38,10 +38,10 @@
 		private $kit_map;
 				
 		//region map
-		private  $region_map;		
+		private $region_map;		
 		
 		//config map
-		private  $config_map;
+		private $config_map;
 				
 		//stores data about current game - used to catch exceptions
 		private $game;
@@ -78,26 +78,28 @@
 		/* START OF PUBLIC METHODS */
 		
 		//allows user to set/change the game after constructing the object
-		public function setGame($game, $blapi_light = false) {
+		public function setGame($game, $light = false) {
 			try {
 				$this->map_map = array();
 				$this->mode_map= array();
 				$this->dlc_map= array();
 				$this->kit_map= array();
 				$this-> config_map= array();
-				$this->loadCfg($game, false);
+				$this->blapi_light = $light;
+				$this->loadCfg($game, $this->blapi_light);
 			}
 			catch (Exception $e) {
 				$this->error($e);
 				exit();
 			}
-			finally {
+			/*finally {
 				//set $this->blapi_light to false, as it's impossible to run blAPI light from this method
 				$this->game = $game;
 				if ($blapi_light) $this->blapi_light = true;
 				else $this->blapi_light = false;
-			}
-			$this->log("setGame(): game set to " . $game);
+			}*/
+			$this->game = $game;
+			$this->log("setGame(): game set to " . $game . ", blAPI light: " . (int) $this->blapi_light);
 		}
 		
 		/* public function getServerData($server_url, $json = false, $human_friendly = false)
@@ -319,14 +321,14 @@
 				
 					//load game-specify assets 
 					$this->kit_map = require_once $this->file_map['bf4_kit_map'];
-					$this->map_map = require_once $this->file_map['bf4_map_map']; //FIX THIS
+					$this->map_map = require_once $this->file_map['bf4_map_map'];
 					$this->dlc_map = require_once $this->file_map['bf4_dlc_map'];
 					$this->mode_map = require_once $this->file_map['bf4_mode_map'];
 					$this->config_map = require_once $this->file_map['bf4_config_map'];
 				}
 				elseif ($game == 'bfh') {
 					$this->kit_map = require_once $this->file_map['bfh_kit_map'];
-					$this->map_map = require_once $this->file_map['bfh_map_map']; //FIX THIS
+					$this->map_map = require_once $this->file_map['bfh_map_map'];
 					$this->dlc_map = require_once $this->file_map['bfh_dlc_map'];
 					$this->mode_map = require_once $this->file_map['bfh_mode_map'];
 					$this->config_map = require_once $this->file_map['bfh_config_map'];
@@ -342,13 +344,13 @@
 			//would you like some spaghetti?
 			//set correct name of CURRENT MAP
 			$map = $result['message']['SERVER_INFO']['map'];
-			$this->map_map[$map] = $this->checkOffset($map, $this->map_map);
-			$result['message']['SERVER_INFO']['map'] = $this->map_map[$map];
+			//$this->map_map[$map] = $this->checkIndex($map, $this->map_map); // TODO what the fuck?
+			$result['message']['SERVER_INFO']['map'] = $this->getIndex($map, $this->map_map);// $this->map_map[$map];
 		
 			//set name of current mode
 			$mode = $result['message']['SERVER_INFO']['mapMode'];
-			$this->mode_map[$mode] = $this->checkOffset($mode, $this->mode_map);
-			$result['message']['SERVER_INFO']['mapMode'] = $this->mode_map[$mode];
+			//$this->mode_map[$mode] = $this->checkIndex($mode, $this->mode_map);
+			$result['message']['SERVER_INFO']['mapMode'] = $this->getIndex($mode, $this->mode_map);// $this->mode_map[$mode];
 			
 			//set correct names of maps IN ROTATION
 			//side note: I could actually do a method (like in humanFriendlySmallPlayer), so I wouldn't have to copy this foreach 1 million times
@@ -357,35 +359,35 @@
 			$i = 0;
 			foreach ($result['message']['SERVER_INFO']['maps']['maps'] as &$row) {
 				$name =  $row['map'];
-				$this->map_map[$name] = $this->checkOffset($name, $this->map_map);
+				//$this->map_map[$name] = $this->checkIndex($name, $this->map_map);
 				
-				$maps[$i] = $this->map_map[$name]; //to set next map later
-				$row['map'] = $this->map_map[$name];
+				$maps[$i] = $this->getIndex($name, $this->map_map); //$this->map_map[$name]; //to set next map later
+				$row['map'] = $this->getIndex($name, $this->map_map); //$this->map_map[$name];
 				$i++; //it's important var, don't delete this!
 			}
 			unset($row); //unset to break the reference caused by & - encouraged by php manual
 			
 			//set next map
 			$nextIndex = $result['message']['SERVER_INFO']['maps']['nextMapIndex'];
-			$this->map_map[$nextIndex] = $this->checkOffset($nextIndex, $this->map_map);
+			$this->map_map[$nextIndex] = $this->getIndex($nextIndex, $this->map_map);
 			$result['message']['SERVER_INFO']['maps']['nextMapIndex'] = $maps[$nextIndex];
 			//set correct names of modes in rotation
 			foreach ($result['message']['SERVER_INFO']['maps']['maps'] as &$row) {
 				$mode =  $row['mapMode'];
-				$this->mode_map[$mode] = $this->checkOffset($mode, $this->mode_map);
-				$row['mapMode'] = $this->mode_map[$mode];
+				//$this->mode_map[$mode] = $this->checkIndex($mode, $this->mode_map);
+				$row['mapMode'] = $this->getIndex($mode, $this->mode_map); //$this->mode_map[$mode];
 			}
 			unset($row);
 			
 			//set correct name of current expansion
 			$dlc = $result['message']['SERVER_INFO']['gameExpansion'];
-			$this->dlc_map[$dlc] = $this->checkOffset($dlc, $this->dlc_map);
-			$result['message']['SERVER_INFO']['gameExpansion'] = $this->dlc_map[$dlc];
+			//$this->dlc_map[$dlc] = $this->checkIndex($dlc, $this->dlc_map);
+			$result['message']['SERVER_INFO']['gameExpansion'] = $this->getIndex($dlc, $this->dlc_map); //$this->dlc_map[$dlc];
 			
 			//set correct name of PRESET
 			$preset = $result['message']['SERVER_INFO']['preset'];
-			$this->preset_map[$preset] = $this->checkOffset($preset, $this->preset_map);
-			$result['message']['SERVER_INFO']['preset'] = $this->preset_map[$preset];
+			//$this->preset_map[$preset] = $this->checkIndex($preset, $this->preset_map);
+			$result['message']['SERVER_INFO']['preset'] = $this->getIndex($preset, $this->preset_map);// $this->preset_map[$preset];
 			
 			//set names of expansions
 			foreach( $result['message']['SERVER_INFO']['gameExpansions'] as &$row) {
@@ -396,8 +398,8 @@
 				
 			//set name of region
 			$region = $result['message']['SERVER_INFO']['region'];
-			$this->region_map[$region] = $this->checkOffset($region, $this->region_map);
-			$result['message']['SERVER_INFO']['region'] = $this->region_map[$region];
+			//$this->region_map[$region] = $this->checkIndex($region, $this->region_map);
+			$result['message']['SERVER_INFO']['region'] = $this->getIndex($region, $this->region_map); //$this->region_map[$region];
 			
 			return $result;
 		}
@@ -508,7 +510,7 @@
 			return array_combine($keys, $path);
 		}
 					
-		//nice small method that solves all spaghetti problems with returning data.
+		//nice small method that solves all spaghetti problems with data returning.
 		private function returnData($data, $json, $is_now_json) {
 			if ($json and !$is_now_json) {
 				return json_encode($data);
@@ -525,12 +527,12 @@
 			
 		}
 		
-		private function checkOffset($offset, $map) {
-			if (isset($map[$offset]) ) {
-				return $map[$offset];
+		private function getIndex ($index, $map) {
+			if (isset($map[strtolower($index)])) {
+				return $map[strtolower($index)];
 			}
 			else {
-				//returns special value to not break the whole soft
+				//returns special value to avoid breaking the whole flow and causing a III World War
 				return "blAPI: Unknown";
 			}
 		}
