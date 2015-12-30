@@ -1,5 +1,4 @@
 <?php
-
 	class blAPI {
 		
 		//stores paths to all maps
@@ -52,19 +51,20 @@
 		//used to load correct amount of maps (light version or no)
 		private $blapi_light;
 		
+		private $blapi_logs = array(
+				"xd" => "zd"	
+		);
 		public function __construct($game, $blapi_light = false, $logs = false) {
 			if ($game != 'unknown'){ 
 				try {
 					$this->loadCfg($game, $blapi_light);
+					$this->game = $game;
+					$this->logs = $logs;
+					$this->blapi_light = $blapi_light;
 				} 
 				catch (Exception $e) {
 					$this->error($e);
 					exit();
-				}
-				finally {
-					$this->game = $game;
-					$this->logs = $logs;
-					$this->blapi_light = $blapi_light;
 				}
 			}
 			$this->log("Instance of blAPI class created with args: \$game: " . $game . " , \$blapi_light: " . (int) $blapi_light 
@@ -92,12 +92,6 @@
 				$this->error($e);
 				exit();
 			}
-			/*finally {
-				//set $this->blapi_light to false, as it's impossible to run blAPI light from this method
-				$this->game = $game;
-				if ($blapi_light) $this->blapi_light = true;
-				else $this->blapi_light = false;
-			}*/
 			$this->game = $game;
 			$this->log("setGame(): game set to " . $game . ", blAPI light: " . (int) $this->blapi_light);
 		}
@@ -381,6 +375,7 @@
 			
 			//set correct name of current expansion
 			$dlc = $result['message']['SERVER_INFO']['gameExpansion'];
+			echo $dlc . " - ";
 			//$this->dlc_map[$dlc] = $this->checkIndex($dlc, $this->dlc_map);
 			$result['message']['SERVER_INFO']['gameExpansion'] = $this->getIndex($dlc, $this->dlc_map); //$this->dlc_map[$dlc];
 			
@@ -391,7 +386,8 @@
 			
 			//set names of expansions
 			foreach( $result['message']['SERVER_INFO']['gameExpansions'] as &$row) {
-				$dlc = $row;
+				//$dlc = $row; TODO additional
+				echo $row . " - ";
 				$row = $this->dlc_map[$row];
 			}
 			unset($row);
@@ -500,8 +496,7 @@
 				 if (isset($map[$old_key]) and !empty($map[$old_key])) {
 				 	$new_key= $map[$old_key];
 				 } else {
-				 	//setting new_key to something to not break the whole soft 
-				 	//probably will throw exception later
+				 	//setting new_key to something that won't break all the stuff 
 					 $new_key = 'blAPI: Unknown';
 				 }
 				 
