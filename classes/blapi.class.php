@@ -183,12 +183,8 @@
 					
 			$this->log("getBattleReport(): recieved data from Battelog");
 			if ($human_friendly) {
-				try {
-					if ($this->blapi_light) throw new Exception("blAPI is running in light mode. You can't use human-friendly feature.");
-				} catch (Exception $e) {
-					$this->error($e);
-					exit();
-				}
+				if ($this->blapi_light) throw new Exception("blAPI is running in light mode. You can't use human-friendly feature.");
+				
 				$report = $this->humanFriendlyReport($report);
 				$report = $this->returnData($report, $json, false);
 				$this->log("getBattleReport(): human-friendly data returned.");
@@ -308,7 +304,6 @@
 				if (empty($this->region_map)){
 					//load universal assets - keep it in if to stay away from setting these second time if setGame is called
 					$this->region_map = require_once $this->file_map['region_map'];
-					//$this->settings_map = require_once"cfg/settings_map.php";
 					$this->preset_map = require_once $this->file_map['preset_map'];
 				}
 				if ($game == 'bf4') {
@@ -338,13 +333,12 @@
 			//would you like some spaghetti?
 			//set correct name of CURRENT MAP
 			$map = $result['message']['SERVER_INFO']['map'];
-			//$this->map_map[$map] = $this->checkIndex($map, $this->map_map); // TODO what the fuck?
-			$result['message']['SERVER_INFO']['map'] = $this->getIndex($map, $this->map_map);// $this->map_map[$map];
+			$result['message']['SERVER_INFO']['map'] = $this->getIndex($map, $this->map_map);
 		
 			//set name of current mode
 			$mode = $result['message']['SERVER_INFO']['mapMode'];
 			//$this->mode_map[$mode] = $this->checkIndex($mode, $this->mode_map);
-			$result['message']['SERVER_INFO']['mapMode'] = $this->getIndex($mode, $this->mode_map);// $this->mode_map[$mode];
+			$result['message']['SERVER_INFO']['mapMode'] = $this->getIndex($mode, $this->mode_map);
 			
 			//set correct names of maps IN ROTATION
 			//side note: I could actually do a method (like in humanFriendlySmallPlayer), so I wouldn't have to copy this foreach 1 million times
@@ -355,8 +349,8 @@
 				$name =  $row['map'];
 				//$this->map_map[$name] = $this->checkIndex($name, $this->map_map);
 				
-				$maps[$i] = $this->getIndex($name, $this->map_map); //$this->map_map[$name]; //to set next map later
-				$row['map'] = $this->getIndex($name, $this->map_map); //$this->map_map[$name];
+				$maps[$i] = $this->getIndex($name, $this->map_map); //to set next map later
+				$row['map'] = $this->getIndex($name, $this->map_map);
 				$i++; //it's important var, don't delete this!
 			}
 			unset($row); //unset to break the reference caused by & - encouraged by php manual
@@ -368,34 +362,31 @@
 			//set correct names of modes in rotation
 			foreach ($result['message']['SERVER_INFO']['maps']['maps'] as &$row) {
 				$mode =  $row['mapMode'];
-				//$this->mode_map[$mode] = $this->checkIndex($mode, $this->mode_map);
-				$row['mapMode'] = $this->getIndex($mode, $this->mode_map); //$this->mode_map[$mode];
+				$row['mapMode'] = $this->getIndex($mode, $this->mode_map);
 			}
 			unset($row);
 			
 			//set correct name of current expansion
 			$dlc = $result['message']['SERVER_INFO']['gameExpansion'];
 			echo $dlc . " - ";
-			//$this->dlc_map[$dlc] = $this->checkIndex($dlc, $this->dlc_map);
-			$result['message']['SERVER_INFO']['gameExpansion'] = $this->getIndex($dlc, $this->dlc_map); //$this->dlc_map[$dlc];
+			$result['message']['SERVER_INFO']['gameExpansion'] = $this->getIndex($dlc, $this->dlc_map);
 			
 			//set correct name of PRESET
 			$preset = $result['message']['SERVER_INFO']['preset'];
-			//$this->preset_map[$preset] = $this->checkIndex($preset, $this->preset_map);
-			$result['message']['SERVER_INFO']['preset'] = $this->getIndex($preset, $this->preset_map);// $this->preset_map[$preset];
+			$result['message']['SERVER_INFO']['preset'] = $this->getIndex($preset, $this->preset_map);
 			
 			//set names of expansions
 			foreach( $result['message']['SERVER_INFO']['gameExpansions'] as &$row) {
 				//$dlc = $row; TODO additional
 				echo $row . " - ";
-				$row = $this->dlc_map[$row];
+				$meme = $row;
+				$row = $this->getIndex($meme, $this->dlc_map);
 			}
 			unset($row);
 				
 			//set name of region
 			$region = $result['message']['SERVER_INFO']['region'];
-			//$this->region_map[$region] = $this->checkIndex($region, $this->region_map);
-			$result['message']['SERVER_INFO']['region'] = $this->getIndex($region, $this->region_map); //$this->region_map[$region];
+			$result['message']['SERVER_INFO']['region'] = $this->getIndex($region, $this->region_map);
 			
 			return $result;
 		}
@@ -450,10 +441,10 @@
 			}
 			
 			//set correct preset name
-			$report['gameMode'] = $this->mode_map[$report['gameMode']];
+			$report['gameMode'] = $this->getIndex($report['gameMode'], $this->mode_map);
 			
 			//set correct map name
-			$report['gameServer']['map'] = $this->map_map[$report['gameServer']['map']];
+			$report['gameServer']['map'] = $this->getIndex($report['gameServer']['map'], $this->map_map);
 			
 			//Loops time!
 					
@@ -474,8 +465,12 @@
 			
 			//will be done 2 times, as there can only be 2 teams
 			for ($a = 1; $a<=2; $a++) {
-				for ($i = 1; $i <= $size; $i++) {
-					$report['teams'][$a]['squads'][$i] = $this->setSquadNames($report['teams'][$a]['squads'][$i], $players);
+				for ($i = 1; $size > 0; $i++) { //squads aren't obligatory numbered 1,2,3 - they can be 1,2,5 - that's why we're iterating as long as there is
+					//a squad left
+					if (isset($report['teams'][$a]['squads'][$i])) {
+						$report['teams'][$a]['squads'][$i] = $this->setSquadNames($report['teams'][$a]['squads'][$i], $players);
+						$size--;
+					}
 				}
 				$size = count($report['teams']['2']['squads']);
 				
