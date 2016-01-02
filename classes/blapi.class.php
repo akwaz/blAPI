@@ -2,25 +2,29 @@
 	class blAPI {
 		
 		//stores paths to all maps
-		private $file_map =  array (
-				//universal
+		private $main_file_map =  array (
+				//universal files
 				"preset_map" => "classes/cfg/preset_map.php",
 				"region_map" => "classes/cfg/region_map.php",
-				//bf4
+		);
+		
+		private $bf4_file_map = array (
 				"bf4_kit_map" => "classes/cfg/bf4/bf4_kit_map.php",
 				"bf4_map_map" => "classes/cfg/bf4/bf4_map_map.php",
 				"bf4_dlc_map" => "classes/cfg/bf4/bf4_dlc_map.php",
 				"bf4_mode_map" => "classes/cfg/bf4/bf4_mode_map.php",
+				"bf4_prize_map" => "classes/cfg/bf4/bf4_prize_map.php",
 				"bf4_config_map" => "classes/cfg/bf4/bf4_config_map.php",
-				//bfh
+		);
+		
+		private $bfh_file_map = array( 
 				"bfh_kit_map" => "classes/cfg/bfh/bfh_kit_map.php",
 				"bfh_map_map" => "classes/cfg/bfh/bfh_map_map.php",
 				"bfh_dlc_map" => "classes/cfg/bfh/bfh_dlc_map.php",
 				"bfh_mode_map" => "classes/cfg/bfh/bfh_mode_map.php",
-				"bfh_config_map" => "classes/cfg/bfh/bfh_config_map.php",
-		
+				//"bfh_prize_map" => "classes/cfg/bfh/bfh_prize_map.php", TODO
+				"bfh_config_map" => "classes/cfg/bfh/bfh_config_map.php"
 		);
-		
 		//stores data about maps (levels)
 		private $map_map;
 		
@@ -31,7 +35,7 @@
 		private $mode_map;
 				
 		//DLCs map
-		private  $dlc_map;
+		private $dlc_map;
 		
 		//kit map
 		private $kit_map;
@@ -41,6 +45,8 @@
 		
 		//config map
 		private $config_map;
+		
+		private $prize_map;
 				
 		//stores data about current game - used to catch exceptions
 		private $game;
@@ -293,34 +299,36 @@
 				//load only config maps
 				switch ($game) {
 					case 'bf4':
-						$this->config_map = require_once $this->file_map['bf4_config_map'];
+						$this->config_map = require_once $this->bf4_file_map['bf4_config_map'];
 						break;
 					case "bfh":
-						$this->config_map = require_once $this->file_map['bfh_config_map'];
+						$this->config_map = require_once $this->bfh_file_map['bfh_config_map'];
 						break;	
 				}
 			}
 			else {
 				if (empty($this->region_map)){
 					//load universal assets - keep it in if to stay away from setting these second time if setGame is called
-					$this->region_map = require_once $this->file_map['region_map'];
-					$this->preset_map = require_once $this->file_map['preset_map'];
+					$this->region_map = require_once $this->main_file_map['region_map'];
+					$this->preset_map = require_once $this->main_file_map['preset_map'];
 				}
 				if ($game == 'bf4') {
 				
 					//load game-specify assets 
-					$this->kit_map = require_once $this->file_map['bf4_kit_map'];
-					$this->map_map = require_once $this->file_map['bf4_map_map'];
-					$this->dlc_map = require_once $this->file_map['bf4_dlc_map'];
-					$this->mode_map = require_once $this->file_map['bf4_mode_map'];
-					$this->config_map = require_once $this->file_map['bf4_config_map'];
+					$this->kit_map = require_once $this->bf4_file_map['bf4_kit_map'];
+					$this->map_map = require_once $this->bf4_file_map['bf4_map_map'];
+					$this->dlc_map = require_once $this->bf4_file_map['bf4_dlc_map'];
+					$this->mode_map = require_once $this->bf4_file_map['bf4_mode_map'];
+					$this->prize_map = require_once $this->bf4_file_map['bf4_prize_map'];
+					$this->config_map = require_once $this->bf4_file_map['bf4_config_map'];
 				}
 				elseif ($game == 'bfh') {
-					$this->kit_map = require_once $this->file_map['bfh_kit_map'];
-					$this->map_map = require_once $this->file_map['bfh_map_map'];
-					$this->dlc_map = require_once $this->file_map['bfh_dlc_map'];
-					$this->mode_map = require_once $this->file_map['bfh_mode_map'];
-					$this->config_map = require_once $this->file_map['bfh_config_map'];
+					$this->kit_map = require_once $this->bfh_file_map['bfh_kit_map'];
+					$this->map_map = require_once $this->bfh_file_map['bfh_map_map'];
+					$this->dlc_map = require_once $this->bfh_file_map['bfh_dlc_map'];
+					$this->mode_map = require_once $this->bfh_file_map['bfh_mode_map'];
+					//$this->prize_map = require_once $this->bfh_file_map['bfh_prize_map'];
+					$this->config_map = require_once $this->bfh_file_map['bfh_config_map'];
 								
 				}
 			}
@@ -459,7 +467,12 @@
 			}
 
 			//set correct names of commander for both teams - TODO
-			
+			for ($a = 1; $a <= 2; $a++) {
+				foreach ($report['teams'][$a]['commanders'] as &$row) {
+					$id = $row;
+					$row = $players[$id];
+				}
+			}
 			//set correct names for squads for both teams
 			$size = count($report['teams']['1']['squads']);
 			
@@ -541,93 +554,54 @@
 			
 			//spaghetti!!!
 			if (!$blapi_light) {
-				if ($game == "bf4") {
-					
-					//no config map, cause it will be checked outside of if(!$blapi_light)
-					if (!file_exists($this->file_map['preset_map'])) {
-						throw new Exception("File " . $this->file_map['preset_map'] . " does not exist.");
-						exit();
-					}
-					if (!file_exists($this->file_map['region_map'])) {
-						throw new Exception("File " . $this->file_map['region_map'] . " does not exist.");
-						exit();
-					}
-					if (!file_exists($this->file_map['bf4_kit_map'])) {
-						throw new Exception("File " . $this->file_map['bf4_kit_map'] . " does not exist.");
-						exit();
-					}
-					if (!file_exists($this->file_map['bf4_map_map'])) {
-						throw new Exception("File " . $this->file_map['bf4_map_map'] . " does not exist.");
-						exit();
-					}
-				
-					if (!file_exists($this->file_map['bf4_dlc_map'])) {
-						throw new Exception("File " . $this->file_map['bf4_dlc_map'] . " does not exist.");
-						exit();
-					}
-					if (!file_exists($this->file_map['bf4_mode_map'])) {
-						throw new Exception("File " . $this->file_map['bf4_mode_map'] . " does not exist.");
-						exit();
-					}
-				}
-				
-				elseif ($game == "bfh") {
-					if (!file_exists($this->file_map['preset_map'])) {
-						throw new Exception("File " . $this->file_map['preset_map'] . " does not exist.");
-						exit();
-					}
-					if (!file_exists($this->file_map['region_map'])) {
-						throw new Exception("File " . $this->file_map['region_map'] . " does not exist.");
-						exit();
-					}
-					if (!file_exists($this->file_map['bfh_kit_map'])) {
-						throw new Exception("File " . $this->file_map['bfh_kit_map'] . " does not exist.");
-						exit();
-					}
-					if (!file_exists($this->file_map['bfh_map_map'])) {
-						throw new Exception("File " . $this->file_map['bfh_map_map'] . " does not exist.");
-						exit();
-					}
-					
-					if (!file_exists($this->file_map['bfh_dlc_map'])) {
-						throw new Exception("File " . $this->file_map['bfh_dlc_map'] . " does not exist.");
-						exit();
-					}
-					if (!file_exists($this->file_map['bfh_mode_map'])) {
-						throw new Exception("File " . $this->file_map['bfh_mode_map'] . " does not exist.");
-						exit();
-					}
+				switch ($game) {	
+					case "bf4":
 						
+						foreach ($this->bf4_file_map as $name => $path) {
+							if (!file_exists($path)) {
+								throw new Exception("File " . $path . " does not exist.");
+								exit();
+							}
+						}
+						
+						break;
+					case "bfh":
+						
+						foreach ($this->bfh_file_map as $name => $path) {
+							if (!file_exists($path)) {
+								throw new Exception("File " . $path . " does not exist.");
+								exit();
+							}
+						}
+						
+						break;
+					default:
+						//used to throw exception - if it came here, that means game is unsupported
+						throw new Exception("Unsupported game.");
+						exit();
 				}
 				
-			}
-			
-			/*side note: above we're loading all of maps that are used in "full" blAPI. Below we load only config_map which is the only
-			 * thing used in light version of blAPI. It has that flow cause we have to load config_map always, no matter if we're using
-			 * light version or full version. This if below is outside of big if(!$blapi_light)
-			 */
-			
-			if ($game == 'bf4') {
-				
-				if (!file_exists($this->file_map['bf4_config_map'])) {
-					throw new Exception("File " . $this->file_map['bf4_config_map'] . " does not exist.");
-					exit();
+				//load region map and preset map
+				foreach ($this->main_file_map as $name => $path) {
+					if (!file_exists($path)) {
+						throw new Exception("File " . $path . " does not exist.");
+					}
 				}
 			}
-			
-			elseif ($game == "bfh") {
-				if (!file_exists($this->file_map['bfh_config_map'])) {
-					throw new Exception("File " . $this->file_map['bfh_config_map'] . " does not exist.");
-					exit();
+			else {
+				switch ($game) {
+					case "bf4":
+						if (!file_exists($this->bf4_file_map['config_map'])) {
+							throw new Exception("File " . $this->bf4_file_map['config_map'] . " does not exist.");
+						}
+						break;
+					case "bfh":
+						if (!file_exists($this->bfh_file_map['config_map'])) {
+							throw new Exception("File " . $this->bfh_file_map['config_map'] . " does not exist.");
+						}
 				}
-				
 			}
-			elseif ($game !== "bf4" && $game !== 'bfh') {
-				throw new Exception("Unsupported game passed");
-				exit();
-			}
-				
-		}
+		}		
 		
 		private function error(Exception $e) {
 			echo "<span style='color:red'>blAPI: an error occured: </span>" . $e->getMessage();
