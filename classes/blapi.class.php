@@ -13,7 +13,6 @@
 				"bf4_map_map" => "classes/cfg/bf4/bf4_map_map.php",
 				"bf4_dlc_map" => "classes/cfg/bf4/bf4_dlc_map.php",
 				"bf4_mode_map" => "classes/cfg/bf4/bf4_mode_map.php",
-				"bf4_prize_map" => "classes/cfg/bf4/bf4_prize_map.php",
 				"bf4_config_map" => "classes/cfg/bf4/bf4_config_map.php",
 		);
 		
@@ -22,44 +21,15 @@
 				"bfh_map_map" => "classes/cfg/bfh/bfh_map_map.php",
 				"bfh_dlc_map" => "classes/cfg/bfh/bfh_dlc_map.php",
 				"bfh_mode_map" => "classes/cfg/bfh/bfh_mode_map.php",
-				//"bfh_prize_map" => "classes/cfg/bfh/bfh_prize_map.php", TODO
 				"bfh_config_map" => "classes/cfg/bfh/bfh_config_map.php"
 		);
 		//stores data about maps (levels)
-		private $map_map;
+		private $map_map, $preset_map, $mode_map, $dlc_map, $kit_map, $region_map, $config_map, $game, $logs, $blapi_light;
+		/*short explanation: mode_map stores data about gamemodes, kit_map names of kits (engineer etc.), game stores name of current game,
+		 * config map some data like urls used to collect data, logs decides whether log event to file, blapi_light decides what files should we load
+		 * - if it's true, constructor will load only config_map one
+		 */ 
 		
-		//preset map
-		private $preset_map;
-			
-		//gamemodes map
-		private $mode_map;
-				
-		//DLCs map
-		private $dlc_map;
-		
-		//kit map
-		private $kit_map;
-				
-		//region map
-		private $region_map;		
-		
-		//config map
-		private $config_map;
-		
-		private $prize_map;
-				
-		//stores data about current game - used to catch exceptions
-		private $game;
-		
-		//stores boolean, decides about logging events to a text file
-		private $logs;
-		
-		//used to load correct amount of maps (light version or no)
-		private $blapi_light;
-		
-		private $blapi_logs = array(
-				"xd" => "zd"	
-		);
 		public function __construct($game, $blapi_light = false, $logs = false) {
 			if ($game != 'unknown'){ 
 				try {
@@ -76,11 +46,7 @@
 			$this->log("Instance of blAPI class created with args: \$game: " . $game . " , \$blapi_light: " . (int) $blapi_light 
 					. ", \$logs: " . (int) $logs);
 		}
-		
-		public function __destruct() {
-			$this->log("Instance of blAPI class was destroyed.");
-		}
-		
+				
 		/* START OF PUBLIC METHODS */
 		
 		//allows user to set/change the game after constructing the object
@@ -90,7 +56,7 @@
 				$this->mode_map= array();
 				$this->dlc_map= array();
 				$this->kit_map= array();
-				$this-> config_map= array();
+				$this->config_map= array();
 				$this->blapi_light = $light;
 				$this->loadCfg($game, $this->blapi_light);
 			}
@@ -138,20 +104,19 @@
 			
 			$this->log("getServerData(): recieved data from Battlelog.");
 			if ($human_friendly) {
+				$this->log("getServerData(): started human-friendly formatting");
+				//pass $result to special method
 				try {
-					if ($this->blapi_light) throw new Exception("blAPI is running in light mode. You can't use human-friendly feature.");
+					$server_data = $this->humanFriendlyServer($server_data);	
 				} catch (Exception $e) {
 					$this->error($e);
 					exit();
 				}
-				$this->log("getServerData(): started human-friendly formatting");
-				//pass $result to special method
-				$server_data = $this->humanFriendlyServer($server_data);	
 				
 				//return json object or php array
-				$server_data = $this->returnData($server_data, $json, false);
+				$this->returnData($server_data, $json, false);
 				$this->log("getServerData(): human-friendly data returned.");
-				return $server_data;
+				//return $server_data;
 			}
 			//if user doesn't want human-friendly response...
 			else {
@@ -166,7 +131,7 @@
 		 * 
 		 * Purpose: Get data about match from battlereport
 		 * Args:
-		 * 		*$report_id* - id from Battlelog (it's the FIRST number in battlereport URL, second is our player id btw) (*OBLIGATORY)
+		 * 		*$report_id* - id from Battlelog (it's the FIRST number in battlereport URL, second is our player id btw)
 		 * 		$json - false by default, if true method will return JSON object (optional)
 		 * 		$human_friendly - false by default. If true, output data will be converted into ready-to-use vals
 		 * 						  like real name of map, correct preset name (optional)
@@ -189,13 +154,17 @@
 					
 			$this->log("getBattleReport(): recieved data from Battelog");
 			if ($human_friendly) {
-				if ($this->blapi_light) throw new Exception("blAPI is running in light mode. You can't use human-friendly feature.");
-				
+				try {				
 				$report = $this->humanFriendlyReport($report);
+				} catch (Exception $e) {
+					$this->error($e);
+					exit();
+				}
+				
 				$report = $this->returnData($report, $json, false);
 				$this->log("getBattleReport(): human-friendly data returned.");
 				return $report;
-			}else {
+			} else {
 				$report = $this->returnData($report, $json, true);
 				$this->log("getBattleReport(): raw data returned");
 				return $report;
@@ -243,14 +212,15 @@
 			
 			$this->log("getPlayerData: recieved data from Battlelog");
 			
-			if ($human_friendly) { //if user wants user-friendly output, we will send this var to the special method
+			if ($human_friendly) { //if user wants user-friendly output, we will send this to the special method
+				
 				try {
-					if ($this->blapi_light) throw new Exception("blAPI is running in light mode. You can't use human-friendly feature.");
+					$player_data = $this->humanFriendlyPlayer($player_data, $big);
 				} catch (Exception $e) {
 					$this->error($e);
 					exit();
 				}
-				$player_data = $this->humanFriendlyPlayer($player_data, $big);
+				
 				$player_data = $this->returnData($player_data, $json, false);
 				$this->log("getPlayerData(): returned human-friendly data");
 				return $player_data;
@@ -265,7 +235,6 @@
 		/* END OF PUBLIC METHODS */
 		
 		private function query($url) {
-			//will use either cURL or simply file_get_contents
 			//$url var must me ready to use when passed to this method
 			$result = @file_get_contents($url);
 			if (!$result) {
@@ -292,7 +261,7 @@
 		
 		private function loadCfg($game, $blapi_light) {
 			/*now supports blapi light - this version requires only config maps, so if you won't use $human_friendly feature,
-			 * you can delete all of files and keep only (game)_config_map.php - it's crucial, class won't run without these files!
+			 * you can delete all files and keep only (game)_config_map.php - it's crucial, class won't run without these files!
 			 */
 			$this->checkFiles($game, $blapi_light);
 			if($blapi_light) {
@@ -319,7 +288,6 @@
 					$this->map_map = require_once $this->bf4_file_map['bf4_map_map'];
 					$this->dlc_map = require_once $this->bf4_file_map['bf4_dlc_map'];
 					$this->mode_map = require_once $this->bf4_file_map['bf4_mode_map'];
-					$this->prize_map = require_once $this->bf4_file_map['bf4_prize_map'];
 					$this->config_map = require_once $this->bf4_file_map['bf4_config_map'];
 				}
 				elseif ($game == 'bfh') {
@@ -327,7 +295,6 @@
 					$this->map_map = require_once $this->bfh_file_map['bfh_map_map'];
 					$this->dlc_map = require_once $this->bfh_file_map['bfh_dlc_map'];
 					$this->mode_map = require_once $this->bfh_file_map['bfh_mode_map'];
-					//$this->prize_map = require_once $this->bfh_file_map['bfh_prize_map'];
 					$this->config_map = require_once $this->bfh_file_map['bfh_config_map'];
 								
 				}
@@ -335,6 +302,10 @@
 		}
 		
 		private function humanFriendlyServer ($result) {
+			if ($this->blapi_light) {
+				throw new Exception("blAPI is running in light mode. You can't use human-friendly feature");
+			}
+			
 			//we have to decode json here anyway, cause we want to change some values to more user-friendly
 			$result = json_decode($result, true);
 		
@@ -385,7 +356,6 @@
 			
 			//set names of expansions
 			foreach( $result['message']['SERVER_INFO']['gameExpansions'] as &$row) {
-				//$dlc = $row; TODO additional
 				echo $row . " - ";
 				$meme = $row;
 				$row = $this->getIndex($meme, $this->dlc_map);
@@ -400,12 +370,15 @@
 		}
 		
 		private function humanFriendlyPlayer ($player_data, $big) {
+			if ($this->blapi_light) {
+				throw new Exception("blAPI is running in light mode. You can't use human-friendly feature");
+			}
 			switch ($big) {
 				
-				//I've put partiular cases in special methods to keep it clear
+				//I've put particular cases in special methods to keep it clear
 				case true:
 					$player_data = json_decode($player_data, true);
-					return $player_data; //I won't support this huge shit with fucking 2000 lines
+					return $player_data; //I won't support this huge shit with 2000 lines
 					break;
 				case false:
 					return $player_data = $this->humanFriendlySmallPlayer($player_data);
@@ -415,6 +388,10 @@
 		
 		//formats data for small chunk of player array
 		private function humanFriendlySmallPlayer($player_data) {
+			if ($this->blapi_light) {
+				throw new Exception("blAPI is running in light mode. You can't use human-friendly feature");
+				exit();
+			}
 			//we have to decode our json			
 			$player_data = json_decode($player_data, true);
 			//format stuff...
@@ -427,10 +404,10 @@
 			//and again for kitScores
 			$player_data['data']['generalStats']['kitScores'] = $this->changeKeys($player_data['data']['generalStats']['kitScores'], $this->kit_map);
 			
-			//and again for serviceStarProgess
+			//and... again for serviceStarProgess
 			$player_data['data']['generalStats']['serviceStarsProgress'] = $this->changeKeys($player_data['data']['generalStats']['serviceStarsProgress'], $this->kit_map);
 			
-			//again, but now for gamemods - gameModesScore	
+			//again, but now for gamemodes - gameModesScore	
 			$player_data['data']['generalStats']['serviceStars'] = $this->changeKeys($player_data['data']['generalStats']['serviceStars'], $this->mode_map);
 			
 			$player_data['data']['generalStats']['gameModesScore'] = $this->changeKeys($player_data['data']['generalStats']['gameModesScore'], $this->mode_map);
@@ -439,6 +416,11 @@
 		}
 		
 		private function humanFriendlyReport($report) {
+			
+			if ($this->blapi_light) {
+					throw new Exception("blAPI is running in light mode. You can't use human-friendly feature");
+			}
+			
 			$report = json_decode($report, true);
 			
 			//create a players array, will use it later when changing ids to usernames
@@ -466,7 +448,7 @@
 			
 			}
 
-			//set correct names of commander for both teams - TODO
+			//set correct names of commander for both teams
 			for ($a = 1; $a <= 2; $a++) {
 				foreach ($report['teams'][$a]['commanders'] as &$row) {
 					$id = $row;
@@ -549,10 +531,9 @@
 			return $array;
 		}
 		
-		//spaghetti!
 		private function checkFiles($game, $blapi_light) {
 			
-			//spaghetti!!!
+			//this is no longer spaghetti!
 			if (!$blapi_light) {
 				switch ($game) {	
 					case "bf4":
@@ -576,7 +557,7 @@
 						
 						break;
 					default:
-						//used to throw exception - if it came here, that means game is unsupported
+						//used to throw exception - if we came here, that means game is unsupported
 						throw new Exception("Unsupported game.");
 						exit();
 				}
@@ -591,13 +572,13 @@
 			else {
 				switch ($game) {
 					case "bf4":
-						if (!file_exists($this->bf4_file_map['config_map'])) {
-							throw new Exception("File " . $this->bf4_file_map['config_map'] . " does not exist.");
+						if (!file_exists($this->bf4_file_map['bf4_config_map'])) {
+							throw new Exception("File " . $this->bf4_file_map['bf4_config_map'] . " does not exist.");
 						}
 						break;
 					case "bfh":
-						if (!file_exists($this->bfh_file_map['config_map'])) {
-							throw new Exception("File " . $this->bfh_file_map['config_map'] . " does not exist.");
+						if (!file_exists($this->bfh_file_map['bfh_config_map'])) {
+							throw new Exception("File " . $this->bfh_file_map['bfh_config_map'] . " does not exist.");
 						}
 				}
 			}
