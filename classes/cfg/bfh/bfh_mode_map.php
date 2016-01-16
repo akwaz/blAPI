@@ -6,11 +6,12 @@
 			"8589934592" => "Crosshair",
 			"17179869184" => "Rescue",
 			"32" => "Team Deathmatch",
-			"1073741824" => "Conquest Large ",
+			"1073741824" => "Conquest Large",
 			"536870912" => "Conquest",
 			"274877906944" => "Bounty Hunter",
-			
+			"549755813888" => "Squad Heist",
+			"524288" => "Capture the Bag",
 			//for player data
-			"8" => "Team Deathmatch",
+			"8" => "Team Deathmatch"
 			
 	);
