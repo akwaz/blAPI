@@ -24,6 +24,11 @@
 			"xp2_precinct7" => "Precinct 7",
 			"xp2_cargoship" => "The Docks",
 			
+			//Getaway
+			"xp3_cistern02" => "Diversion",
+			"xp3_border" => "Double Cross",
+			"xp3_highway" => "Pacific Highway",
+			"xp3_traindodge" => "Train Dodge",
 			
 			//Night free dlc
 			"xp25_bank" => "Night Job",

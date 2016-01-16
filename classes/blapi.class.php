@@ -114,9 +114,9 @@
 				}
 				
 				//return json object or php array
-				$this->returnData($server_data, $json, false);
+				$server_data = $this->returnData($server_data, $json, false);
 				$this->log("getServerData(): human-friendly data returned.");
-				//return $server_data;
+				return $server_data;
 			}
 			//if user doesn't want human-friendly response...
 			else {
@@ -347,7 +347,6 @@
 			
 			//set correct name of current expansion
 			$dlc = $result['message']['SERVER_INFO']['gameExpansion'];
-			echo $dlc . " - ";
 			$result['message']['SERVER_INFO']['gameExpansion'] = $this->getIndex($dlc, $this->dlc_map);
 			
 			//set correct name of PRESET
@@ -356,7 +355,6 @@
 			
 			//set names of expansions
 			foreach( $result['message']['SERVER_INFO']['gameExpansions'] as &$row) {
-				echo $row . " - ";
 				$meme = $row;
 				$row = $this->getIndex($meme, $this->dlc_map);
 			}
@@ -410,8 +408,8 @@
 			//again, but now for gamemodes - gameModesScore	
 			$player_data['data']['generalStats']['serviceStars'] = $this->changeKeys($player_data['data']['generalStats']['serviceStars'], $this->mode_map);
 			
-			$player_data['data']['generalStats']['gameModesScore'] = $this->changeKeys($player_data['data']['generalStats']['gameModesScore'], $this->mode_map);
-						
+			//$player_data['data']['generalStats']['gameModesScore'] = $this->changeKeys($player_data['data']['generalStats']['gameModesScore'], $this->mode_map);
+			//This is somehow bugged in battlelog - this array contains two team deathmatch values and some random numbers			
 			return $player_data;
 		}
 		
@@ -454,7 +452,14 @@
 					$id = $row;
 					$row = $players[$id];
 				}
+				unset($row);
 			}
+			
+			//set correct names in list of players
+			$report['players'] = $this->changeKeys($report['players'], $players);
+			
+			//set correct names of players in list of prizes
+			$report['allPersonalPrizes'] = $this->changeKeys($report['allPersonalPrizes'], $players);
 			//set correct names for squads for both teams
 			$size = count($report['teams']['1']['squads']);
 			
