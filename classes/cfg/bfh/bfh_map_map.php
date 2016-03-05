@@ -30,8 +30,13 @@
 			"xp3_highway" => "Pacific Highway",
 			"xp3_traindodge" => "Train Dodge",
 			
+			//Betrayal
+			"xp4_alcatraz" => "Alcatraz",
+			"xp4_cemetery" => "Cemetery",
+			"xp4_chinatown" => "Chinatown",
+			"xp4_snowcrash" => "Thin Ice",
+			
 			//Night free dlc
 			"xp25_bank" => "Night Job",
 			"xp25_sawmill" => "Night Woods"
-			//...to be updated
 	);
